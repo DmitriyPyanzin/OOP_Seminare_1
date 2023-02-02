@@ -2,7 +2,7 @@ package example;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Random;
 
 public class RobotMap {
 
@@ -12,8 +12,22 @@ public class RobotMap {
 
     private final List<Robot> robots;
 
-    public RobotMap(int n, int m) {
+    /**
+     * Вызов списка
+     * @return - возврат списка действующих роботов
+     */
+    public List<Robot> getRobots() {
+        return robots;
+    }
+
+    /**
+     * Конструктор создания карты по умолчанию
+     * @param n - длина
+     * @param m - ширина
+     */
+    public RobotMap(int n, int m) throws RobotMapException{
         this(n, m, 10);
+
     }
 
     /**
@@ -21,8 +35,10 @@ public class RobotMap {
      * @param n - длина
      * @param m - ширина
      */
-    public RobotMap(int n, int m, int maxRobotCount) {
+    public RobotMap(int n, int m, int maxRobotCount) throws RobotMapException{
         // TODO: 13.01.2023 Реализовать проверку входных данных
+        if(n < 10 || m < 10 || n > 100 || m > 100)
+            throw new RobotMapException("Некоректные координаты для поля");
         this.n = n;
         this.m = m;
         this.maxRobotCount = maxRobotCount;
@@ -47,6 +63,10 @@ public class RobotMap {
 
         Robot robot = new Robot(robotPosition);
         robots.add(robot);
+        if (robots.size() > maxRobotCount) {
+            throw new RobotCreationException("Достигнуто максимальное количество роботов");
+        }
+
         return robot;
     }
 
@@ -72,10 +92,43 @@ public class RobotMap {
         validatePointIsFree(point);
     }
 
+    /**
+     * Создание изменяемого списка с именами роботов
+     * @return - возврат списка имен
+     */
+    public ArrayList <String> listNameOfRobot() {
+        ArrayList<String> listNameOfRobot = new ArrayList<>();
+        listNameOfRobot.add("T-1000 ");
+        listNameOfRobot.add("T-800 ");
+        listNameOfRobot.add("ВАЛЛИ-И ");
+        listNameOfRobot.add("Бамблби ");
+        listNameOfRobot.add("Робокоп ");
+        listNameOfRobot.add("R2D2 ");
+        listNameOfRobot.add("C3PO ");
+        listNameOfRobot.add("Чаппи ");
+        listNameOfRobot.add("Бэндер ");
+        listNameOfRobot.add("Конор из компании Киберлайф ");
+
+        return listNameOfRobot;
+    }
+
+    /**
+     * Имя для робота
+     * @param listName - Список имен
+     * @return - имя
+     */
+    public String nameOfRobots(ArrayList<String> listName){
+        Random random = new Random();
+        int num = random.nextInt(0, listName.size() - 1);
+        return listName.get(num);
+    }
+
+
     public class Robot {
         public static final Direction DEFAULT_DIRECTION = Direction.TOP;
 
-        private final UUID id;
+        private final String nameOfRobot;
+
         private MapPoint point;
         private Direction direction;
 
@@ -84,46 +137,23 @@ public class RobotMap {
          * @param point - координаты
          */
         public Robot(MapPoint point) {
-            this.id = UUID.randomUUID();
             this.point = point;
             this.direction = DEFAULT_DIRECTION;
-        }
-
-        /**
-         * движение робота на одну клетку
-         * @throws RobotMoveException - Ошибка движения робота
-         */
-        public void move() throws RobotMoveException{
-            final MapPoint newPoint;
-            try {
-            newPoint = switch (direction) {
-                case TOP -> new MapPoint(point.getX() - 1, point.getY());
-                case BOTTOM -> new MapPoint(point.getX() + 1, point.getY());
-                case RIGHT -> new MapPoint(point.getX(), point.getY() + 1);
-                case LEFT -> new MapPoint(point.getX(), point.getY() - 1);
-            };
-
-
-                validatePoint(newPoint);
-            } catch (PointValidationException e) {
-                throw new RobotMoveException(e.getMessage(), this);
-            }
-
-            this.point = newPoint;
+            this.nameOfRobot = nameOfRobots(listNameOfRobot());
         }
 
         /**
          * движение робота на заданное количество клеток
          * @throws RobotMoveException - Ошибка движения робота
          */
-        public void move(int x) throws RobotMoveException{
+        public void move(int motion) throws RobotMoveException{
             final MapPoint newPoint;
             try {
                 newPoint = switch (direction) {
-                    case TOP -> new MapPoint(point.getX() - 1, point.getY());
-                    case BOTTOM -> new MapPoint(point.getX() + 1, point.getY());
-                    case RIGHT -> new MapPoint(point.getX(), point.getY() + 1);
-                    case LEFT -> new MapPoint(point.getX(), point.getY() - 1);
+                    case TOP -> new MapPoint(point.getX() + motion, point.getY());
+                    case BOTTOM -> new MapPoint(point.getX() - motion, point.getY());
+                    case RIGHT -> new MapPoint(point.getX(), point.getY() + motion);
+                    case LEFT -> new MapPoint(point.getX(), point.getY() - motion);
                 };
 
 
@@ -159,7 +189,7 @@ public class RobotMap {
          */
         @Override
         public String toString() {
-            return "demo.Robot-" + id + point;
+            return "demo.Robot-" + nameOfRobot + point;
 
         }
     }
@@ -175,7 +205,7 @@ public class RobotMap {
             super(x, y);
 
             if (x < 0 || x > n || y < 0 || y > m) {
-                throw new PointValidationException("Недопустимое значение Point: " + this);
+                throw new PointValidationException("Недопустимое значение координат: " + this);
             }
         }
 

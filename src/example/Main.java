@@ -17,45 +17,85 @@ public class Main {
         // 4*. Попробовать реализовать какую-то свою структуру (Автомобиль)
 
 
-//        Scanner scanner = new Scanner(System.in);
-//        RobotMap map = null;
-//
-//        System.out.println("введите размер поля: (2 числа черерз пробел)");
-//        int n = scanner.nextInt();
-//        int m = scanner.nextInt();
-//        try {
-//            map = new RobotMap(n, m);
-//        } catch (IllegalArgumentException e) {
-//            System.err.println("Не удалось создать карту: " + e.getMassage());
-//            System.out.println("Попробуйте еще раз!");
-//        }
+        // Вводные данные
+        Scanner sc = new Scanner(System.in);
+        RobotMap robotMap = null;
+        MyMethods textMethods = new MyMethods();
+        boolean is_program = true;
 
-        RobotMap map = new RobotMap(100, 100, 15);
 
+        // Сама программа
+        textMethods.Greetin();
         try {
-            RobotMap.Robot robot1 = map.createRobot(new Point(-3, 5));
-        } catch (RobotCreationException e) {
-            System.err.println("Не удалось создать робота!");
-        }
-        try {
-            RobotMap.Robot robot2 = map.createRobot(new Point(4, 5));
-            robot2.changeDirection(Direction.BOTTOM);
-            robot2.move();
-            System.out.println(robot2);
-        } catch (RobotCreationException e) {
-            System.err.println("Не удалось создать робота!");
-        } catch (RobotMoveException e) {
-            System.err.println("Не удалось сдвинуть робота" + e.getRobot() + " с места!");
-        }
-        try {
-            RobotMap.Robot robot = map.createRobot(new Point(100, 100));
-            robot.changeDirection(Direction.BOTTOM);
-            robot.move();
-            System.out.println(robot);
-        } catch (RobotCreationException e) {
-            System.err.println("Не удалось создать робота!");
-        } catch (RobotMoveException e) {
-            System.err.println("Не удалось сдвинуть робота" + e.getRobot() + " с места!");
+            int n = sc.nextInt(), m = sc.nextInt();
+            robotMap = new RobotMap(n, m);
+            textMethods.finishMap();
+            while(is_program) {
+                boolean flag = true;
+                textMethods.mainMenu();
+                int answer = sc.nextInt();
+                switch (answer) {
+                    case 1 -> {
+                        while (flag) {
+                            try {
+                                textMethods.textCreateRobot();
+                                int x = sc.nextInt(), y = sc.nextInt();
+                                RobotMap.Robot robot = robotMap.createRobot(new Point(x, y));
+                                System.out.println(robot + " создан!");
+                                flag = false;
+                            } catch (RobotCreationException e) {
+                                System.err.println(e.getMessage());
+                                System.out.println("Выбери другой пункт меню!");
+                                System.out.println();
+                                flag = false;
+                            }
+                        }
+                    }
+                    case 2 -> {
+                        if (robotMap.getRobots().size() == 0) {
+                            System.out.println("Не создано не одного робота!");
+                            System.out.println();
+                        } else {
+                            System.out.println(robotMap.getRobots());
+                            System.out.println();
+                        }
+                    }
+                    case 3 -> {
+                        while (flag) {
+                            textMethods.choiseMenu();
+                            int num = sc.nextInt();
+                            if (num == 2) {
+                                flag = false;
+                            } else if (num ==1) {
+                                textMethods.choiseRobot();
+                                System.out.println(robotMap.getRobots());
+                                try {
+                                    int index = sc.nextInt() - 1;
+                                    System.out.println("Вы выбрали " + robotMap.getRobots().get(index));
+                                    textMethods.textChoiseMove();
+                                    Direction direction = Direction.valueOf(sc.next());
+                                    RobotMap.Robot robot = robotMap.getRobots().get(index);
+                                    robot.changeDirection(direction);
+                                    textMethods.lengthStep();
+                                    int lenStep = sc.nextInt();
+                                    robot.move(lenStep);
+                                    System.out.println("Теперь другие координаты у " + robot );
+                                } catch (RobotMoveException e) {
+                                    System.err.println(e.getMessage());
+                                }
+                            } else
+                                System.out.println("Вам нужно ввести 1 или 2");
+                        }
+                    }
+                    case 4 -> {
+                        is_program = false;
+                        textMethods.GoodBay();
+                    }
+                }
+            }
+        } catch (RobotMapException | RuntimeException e) {
+            System.err.println(e.getMessage());
+
         }
     }
 }
